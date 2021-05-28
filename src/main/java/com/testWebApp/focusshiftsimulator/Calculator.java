@@ -40,4 +40,8 @@ class Calculator {
         return sum / distances.size();
     }
 
+    int getArea(int width, int height) {
+        return width * height;
+    }
+
 }

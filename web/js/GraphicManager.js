@@ -25,9 +25,11 @@ let screenHeight = screenSize.height;
 let calc = new Calculator();
 let targetMovement = {}; // HashMap<Integer, Point>
 let mouseMovement = {}; // HashMap<Long, Point>
+let mouseClicks = {}; // HashMap<Long, Point>
 
 let targetMovementIndex = 0;
 let mouseMovementIndex = 0; //maybe cause error then use BigInt()
+let mouseClickIndex = 0; //maybe cause error then use BigInt()
 
 let eyeStrainRate = "";
 
@@ -60,19 +62,17 @@ function startEyeTracking(){
 
     target.style.display = "block";
     document.addEventListener('click', errorClick);
-    // initGraphicManager();
 }
 
 function errorClick(e) {
     if(e.target.tagName != "BUTTON"){
+        onClickDocument(e, "Err")
         errorsMap[errorCounter] =  new Point(e.clientX, e.clientY);
         errorCounter++;
     }
 }
 
 function stopEyeTracking() {
-    //event.stopPropagation(); //iffy
-    // webgazer.pause();
     webgazer.end();
     document.removeEventListener('click', errorClick);
 }
@@ -80,13 +80,12 @@ function stopEyeTracking() {
 function initGraphicManager(etAccuracy) {
     eyeTrackingAccuracy = etAccuracy;
     createTarget();
-    // target.
     calc.prepareDimensions(screenSize, WIDTH_RATIO, HEIGHT_RATIO, TRIALS);
     startEyeTracking();
 }
 
 function captureScreenshot() {
-    htmls.push(document.getElementsByTagName('html')[0].innerHTML);
+    htmls.push(document.getElementsByTagName('body')[0].innerHTML);
 }
 
 function generateTargetWidth() {
@@ -128,19 +127,18 @@ function sendDataToServer() {
 
     document.getElementById("finalSurvey").style.display = "none";
     document.getElementById("thankYou").style.display = "block";
-    let averageAreaOfTarget = calc.getAverageAreaOfTarget(targetAreaList);
-    let averageWidths = calc.getAverageWidths(widthsList);
+    let averageAreaOfTarget = Calculator.getAverageAreaOfTarget(targetAreaList);
+    let averageWidths = Calculator.getAverageWidths(widthsList);
     eyeStrainRate = document.getElementById("eyeStrainRate").value;
-    let getArea = calc.getArea(screen.width, screen.height);
-
-    console.log(eyeTrackingAccuracy);
+    closeFullscreen();
 
     $.post("userStudyFinished",
         {
             eyeTrackingData: JSON.stringify(dataRes),
             durationTime: durationTime,
             eyeStrainRate: eyeStrainRate,
-            calcGetArea: getArea,
+            screenWidth: screenWidth,
+            screenHeight: screenHeight,
             averageAreaOfTarget: averageAreaOfTarget,
             averageWidths: averageWidths,
             mouseMovementIndex: mouseMovementIndex,
@@ -151,6 +149,7 @@ function sendDataToServer() {
             screenshots: JSON.stringify(htmls),
             mv: JSON.stringify(mouseMovement),
             tm: JSON.stringify(targetMovement),
+            mouseClicks: JSON.stringify(mouseClicks),
             eyeTrackingAccuracy: eyeTrackingAccuracy,
             counter: counter
 
@@ -162,6 +161,7 @@ function sendDataToServer() {
 }
 
 function createTarget() {
+    document.getElementsByClassName('swal-overlay').item(0).remove();
     target = document.createElement("BUTTON");
     let targetText = document.createTextNode("Click");
     target.appendChild(targetText);
@@ -175,6 +175,8 @@ function createTarget() {
     target.style.display = "none";
     target.style.width = targetWidth.toString() + "px";
     target.style.height = targetHeight.toString() + "px";
+    target.style.position = "relative";
+    target.style.backgroundColor = "#C8E6FF";
     target.addEventListener('click', onClickTarget);
 
     document.addEventListener('mousemove',onMotionDocument);
@@ -184,13 +186,22 @@ function createTarget() {
 
     centersMap[counter] = new Point(screenWidth / 2, screenHeight / 2);
 
-    let areaOfTarget = calc.getArea(targetWidth, targetHeight);
+    let areaOfTarget = Calculator.getArea(targetWidth, targetHeight);
     targetAreaList.push(areaOfTarget);
 }
 
 function addMousePoint(p) {
     mouseMovement[mouseMovementIndex] = p;
     mouseMovementIndex++;
+}
+
+function addMouseClickPoint(p, status){
+    let obj = {}
+    obj.point = p;
+    obj.status = status
+    mouseClicks[mouseClickIndex] = obj;
+    mouseClickIndex++;
+    console.log(mouseClicks)
 }
 
 function openFullscreen() {
@@ -201,5 +212,15 @@ function openFullscreen() {
         elem.webkitRequestFullscreen();
     } else if (elem.msRequestFullscreen) { /* IE11 */
         elem.msRequestFullscreen();
+    }
+}
+
+function closeFullscreen() {
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
     }
 }

@@ -36,6 +36,7 @@
     "url": "https://opencollective.com/SweetAlert"
   },
   "dependencies": {
+    "dom-to-image": "^2.6.0",
     "es6-object-assign": "^1.1.0",
     "promise-polyfill": "^6.0.2"
   },

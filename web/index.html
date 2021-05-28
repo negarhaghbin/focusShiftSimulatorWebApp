@@ -7,21 +7,52 @@
 </head>
 <body>
 <script src="./js/calibration/jquery/dist/jquery.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <script src="./js/pretest/Pretest.js"></script>
 <script src="./js/pretest/PretestEventListeners.js"></script>
 
-<div align="center" id="personalDataDiv">
+
+<div align="left" id="personalDataDiv">
     <p>
         <strong>Student ID?</strong>
         <input type="number" id="userId" oninput="onInputPretestSurvey()" required />
     </p>
     <p>
         <strong>How many hours have you worked on a digital display today?</strong>
-        <input type="number" id="displayHours" oninput="onInputPretestSurvey()" required />
+        <input type="number" id="displayHours" oninput="onInputPretestSurvey()" min="0" required />
     </p>
     <p>
-        <button id="storePersonalDataButton" onclick="storePersonalData()" disabled>OK</button>
+        <strong>Are you experiencing any of the following symptoms?</strong><br>
+        <input type="checkbox" id="symptoms1" name="symptoms1" value="Dry eyes" />
+        <label for="symptoms1">Dry eyes</label><br>
+
+        <input type="checkbox" id="symptoms2" name="symptoms2" value="Redness in the eyes" />
+        <label for="symptoms2">Redness in the eyes</label><br>
+
+        <input type="checkbox" id="symptoms3" name="symptoms3" value="Irritation of the eyes" />
+        <label for="symptoms3">Irritation of the eyes</label><br>
+
+        <input type="checkbox" id="symptoms4" name="symptoms4" value="Headache" />
+        <label for="symptoms4">Headache</label><br>
+
+        <input type="checkbox" id="symptoms5" name="symptoms5" value="Blurred vision" />
+        <label for="symptoms5">Blurred vision</label><br>
+
+        <input type="checkbox" id="symptoms6" name="symptoms6" value="Discomfort of the eyes" />
+        <label for="symptoms6">Discomfort of the eyes</label><br>
+
+        <input type="checkbox" id="symptoms7" name="symptoms7" value="Sensitivity to bright light" />
+        <label for="symptoms7">Sensitivity to bright light</label><br>
+
+        <input type="checkbox" id="symptoms8" name="symptoms8" value="Tired eyes" />
+        <label for="symptoms8">Tired eyes</label><br>
+
+        <input type="checkbox" id="symptoms9" name="symptoms9" value="None" />
+        <label for="symptoms9">None</label><br>
+
+        <input type="text" id="symptoms10" placeholder="Other..."/>
+    </p>
+    <p align="center">
+        <button style="width: 80px" id="storePersonalDataButton" onclick="storePersonalData()" disabled>OK</button>
     </p>
 </div>
 

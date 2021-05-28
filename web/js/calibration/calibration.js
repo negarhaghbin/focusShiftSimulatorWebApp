@@ -6,6 +6,7 @@ var CalibrationPoints={};
  */
 function ClearCanvas(){
   $(".Calibration").hide();
+
   var canvas = document.getElementById("plotting_canvas");
   canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -125,6 +126,7 @@ $(document).ready(function(){
 
 function setUpUserStudy() {
     $(".testingDiv").show();
+    $(".Calibration").remove();
     var canvas = document.getElementById("plotting_canvas");
     if (canvas){
         canvas.parentNode.removeChild(canvas);
@@ -132,7 +134,8 @@ function setUpUserStudy() {
     webgazer.showPredictionPoints(false)
     webgazer.showVideoPreview(false)
     document.getElementById("webgazerNavbar").style.left = '0';
-    $("#webgazerNavbar").hide();
+    // $("#webgazerNavbar").hide();
+    $("#webgazerNavbar").remove();
     $("#webgazerNavbarTest").show();
     webgazer.pause()
 }

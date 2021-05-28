@@ -1,12 +1,7 @@
 package com.testWebApp.io;
 
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,9 +50,9 @@ public class FileOperation {
 
 
     private String getCurrentDirectory() {
-//        Path currentRelativePath = Paths.get("");
-//        String directory = currentRelativePath.toAbsolutePath().toString();
-        String directory = "/Users/negar/IdeaProjects";
+        Path currentRelativePath = Paths.get("");
+        String directory = currentRelativePath.toAbsolutePath().toString();
+//        String directory = "/Users/negar/Desktop/";
         LOG.info("Working Directory = " + directory);
 
         return directory;
@@ -101,7 +96,7 @@ public class FileOperation {
 //    }
 
     public  void  saveScreenshots(int trial, ArrayList<String> screenShotHtmls){
-        String format = "txt";
+        String format = "html";
 
         for (int i=0; i<trial;i++){
             String fileName = screenShotDirectory + "screenshot_trial_" + i + "_" + getTimeStamp() + "." + format;
@@ -117,5 +112,17 @@ public class FileOperation {
             }
         }
     }
+
+//    public  void  saveScreenshots(int trial, ArrayList<String> screenShotHtmls, Dimension dimension){
+//        String format = "png";
+//
+//        for (int i=0; i<trial;i++){
+//            String fileName = screenShotDirectory + "screenshot_trial_" + i + "_" + getTimeStamp() + "." + format;
+//            HtmlImageGenerator imageGenerator = new HtmlImageGenerator();
+//            imageGenerator.loadHtml(screenShotHtmls.get(i));
+//            imageGenerator.setSize(dimension);
+//            imageGenerator.saveAsImage(fileName);
+//        }
+//    }
 
 }

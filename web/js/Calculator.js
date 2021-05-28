@@ -4,11 +4,11 @@ class Calculator {
         this.dimensionsList = []
     }
 
-    getArea(width, height) {
+    static getArea(width, height) {
         return width * height;
     }
 
-    getTargetCenter(target) {
+    static getTargetCenter(target) {
         let widthString = target.style.width;
         let width =  parseInt(widthString.substring(0,widthString.length-2));
 
@@ -31,14 +31,14 @@ class Calculator {
         return new Point(midX, midY);
     }
 
-    calcDistance(x1, y1, x2, y2) {
+    /*calcDistance(x1, y1, x2, y2) {
         let deltaX = x2 - x1;
         let deltaY = y2 - y1;
 
         let valueX = Math.floor(Math.pow(deltaX, 2));
         let valueY = Math.floor(Math.pow(deltaY, 2));
         return Math.sqrt(valueX + valueY);
-    }
+    }*/
 
 
 
@@ -56,26 +56,24 @@ class Calculator {
             let dim = new Dimension(width, height);
             this.dimensionsList.push(dim);
         }
-
-        // console.log("dimensions: " + this.dimensionsList);
     }
 
     pickDimension() {
         let limit = this.dimensionsList.length;
-        let index = this.getRandomNumber(limit);
+        let index = Calculator.getRandomNumber(limit);
 
         let dim = this.dimensionsList[index];
-        this.dimensionsList.splice(index,1)
-        //might return undefined. double checkkkkk#########
+        this.dimensionsList.splice(index,1);
+        //might return undefined. double check#########
         return dim;
     }
 
-    getRandomNumber(limit) {
+    static getRandomNumber(limit) {
         // let number = rand.nextInt(limit);
         return Math.floor((Math.random() * limit));  //are they the same?
     }
 
-    getAverage(valueList) {
+    static getAverage(valueList) {
         let sum = 0.0;
         let item;
         for (item of valueList) {
@@ -84,13 +82,13 @@ class Calculator {
         return (sum / valueList.length); //should be double
     }
 
-    getAverageAreaOfTarget(areas) {
-        return this.getAverage(areas);
+    static getAverageAreaOfTarget(areas) {
+        return Calculator.getAverage(areas);
     }
 
 
-    getAverageWidths(widthsList) {
-        return this.getAverage(widthsList);
+    static getAverageWidths(widthsList) {
+        return Calculator.getAverage(widthsList);
     }
 
 }

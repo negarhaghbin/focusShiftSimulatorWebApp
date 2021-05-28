@@ -13,11 +13,19 @@ function onMotionDocument(e) {
     let y = e.clientY;
     let p = new Point(x, y);
     addMousePoint(p);
+}
 
+function onClickDocument(e, status) {
+    let x = e.clientX;
+    let y = e.clientY;
+    let p = new Point(x, y);
+    addMouseClickPoint(p, status);
 }
 
 function onClickTarget(e) {
     event.stopPropagation();
+
+    onClickDocument(e, "OK");
     if (counter < TRIALS) {
         captureScreenshot(counter + 1);
         if (startTime == 0) {
@@ -37,7 +45,7 @@ function onClickTarget(e) {
         e.target.style.width = newWidth.toString() + "px";
         e.target.style.height = newHeight.toString() + "px";
 
-        let areaOfTarget = calc.getArea(newWidth, newHeight);
+        let areaOfTarget = Calculator.getArea(newWidth, newHeight);
         targetAreaList.push(areaOfTarget);
 
         let newX = getNewX();
@@ -47,7 +55,7 @@ function onClickTarget(e) {
         e.target.style.top = newY.toString()+"px";
 
         addNewTargetLocation(newTargetLocation);
-        let centerPoint = calc.getTargetCenter(e.target);
+        let centerPoint = Calculator.getTargetCenter(e.target);
 
         counter++;
         centersMap[counter] = centerPoint;

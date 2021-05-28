@@ -1,8 +1,9 @@
 package com.testWebApp.focusshiftsimulator;
 
+import com.testWebApp.movements.Click;
+import com.testWebApp.movements.MouseClicks;
 import com.testWebApp.movements.MouseMovement;
 import com.testWebApp.movements.TargetMovement;
-import javafx.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,12 +18,12 @@ import java.util.Iterator;
 
 @WebServlet("/userStudyFinished")
 public class FocusShiftServlet extends HttpServlet {
-    private ArrayList< Pair<Double,Double> > parseEyeTrackingData(String eyeTrackingJSONString){
-        ArrayList< Pair<Double,Double> > eyeTrackingData = new ArrayList<>();
+    private ArrayList< Pair > parseEyeTrackingData(String eyeTrackingJSONString){
+        ArrayList< Pair > eyeTrackingData = new ArrayList<>();
         JSONArray eyeTrackingJSONArray = new JSONArray(eyeTrackingJSONString);
 
         for (int i=0;i<eyeTrackingJSONArray.length();i++){
-            Pair<Double, Double> tempPoint = new Pair<>(eyeTrackingJSONArray.getJSONObject(i).getDouble("x") , eyeTrackingJSONArray.getJSONObject(i).getDouble("y"));
+            Pair tempPoint = new Pair(eyeTrackingJSONArray.getJSONObject(i).getDouble("x") , eyeTrackingJSONArray.getJSONObject(i).getDouble("y"));
             eyeTrackingData.add(tempPoint);
         }
         return  eyeTrackingData;
@@ -86,6 +87,20 @@ public class FocusShiftServlet extends HttpServlet {
         return new MouseMovement(mouseMovement);
     }
 
+    private MouseClicks parseMouseClicks(String mcJSONString){
+        HashMap<Integer, Click> mouseClicks = new HashMap<>();
+        JSONObject mcJSONObject = new JSONObject(mcJSONString);
+        Iterator<String> keys = mcJSONObject.keys();
+
+        while(keys.hasNext()) {
+            String key = keys.next();
+            Point p = new Point(mcJSONObject.getJSONObject(key).getJSONObject("point").getInt("x"), mcJSONObject.getJSONObject(key).getJSONObject("point").getInt("y"));
+            Click click = new Click(p, mcJSONObject.getJSONObject(key).getString("status"));
+            mouseClicks.put(Integer.parseInt(key),click);
+        }
+        return new MouseClicks(mouseClicks);
+    }
+
     private TargetMovement parseTargetMovement(String tmJSONString){
         HashMap<Integer, Point> targetMovement = new HashMap<>();
         JSONObject tmJSONObject = new JSONObject(tmJSONString);
@@ -100,7 +115,8 @@ public class FocusShiftServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response){
-        int calcGetArea = Integer.parseInt(request.getParameter("calcGetArea"));
+        int screenWidth = Integer.parseInt(request.getParameter("screenWidth"));
+        int screenHeight = Integer.parseInt(request.getParameter("screenHeight"));
         double averageAreaOfTarget = Double.parseDouble(request.getParameter("averageAreaOfTarget"));
         double averageWidths = Double.parseDouble(request.getParameter("averageWidths"));
         double durationTime = Double.parseDouble(request.getParameter("durationTime"));
@@ -110,16 +126,17 @@ public class FocusShiftServlet extends HttpServlet {
         int counter = Integer.parseInt(request.getParameter("counter"));
         int eyeTrackingPrecision = Integer.parseInt(request.getParameter("eyeTrackingAccuracy"));
 
-        ArrayList< Pair<Double,Double> > eyeTrackingData = parseEyeTrackingData(request.getParameter("eyeTrackingData"));
+        ArrayList< Pair > eyeTrackingData = parseEyeTrackingData(request.getParameter("eyeTrackingData"));
         ArrayList<String> screenShotHTMLs = parseScreenshots(request.getParameter("screenshots"));
         HashMap<Integer, Integer> targetWidthMap = parseTargetWidthMap(request.getParameter("targetWidthMap"));
         HashMap<Integer, Point> centersMap = parseCentersMap(request.getParameter("centersMap"));
         HashMap<Integer, Point> errorsMap = parseErrorsMap(request.getParameter("errorsMap"));
         MouseMovement mv = parseMouseMovement(request.getParameter("mv"));
         TargetMovement tm = parseTargetMovement(request.getParameter("tm"));
+        MouseClicks mc = parseMouseClicks(request.getParameter("mouseClicks"));
 
         InteractionManager im = InteractionManager.getInstance();
-        im.startTest(calcGetArea, averageAreaOfTarget, averageWidths, durationTime, errorCounter, eyeStrainRate, mouseMovementIndex, eyeTrackingData, screenShotHTMLs, targetWidthMap, centersMap, errorsMap, mv, tm, counter, eyeTrackingPrecision);
+        im.startTest(averageAreaOfTarget, averageWidths, durationTime, errorCounter, eyeStrainRate, mouseMovementIndex, eyeTrackingData, screenShotHTMLs, targetWidthMap, centersMap, errorsMap, mv, tm, counter, eyeTrackingPrecision, screenWidth, screenHeight, mc);
     }
 }
 

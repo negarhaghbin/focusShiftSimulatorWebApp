@@ -1,11 +1,14 @@
 package com.testWebApp.focusshiftsimulator;
 
-import javafx.util.Pair;
+//import javafx.util.Pair;
+
+import com.testWebApp.io.FileOperation;
+import com.testWebApp.movements.Click;
+import com.testWebApp.movements.MouseClicks;
 import com.testWebApp.movements.MouseMovement;
 import com.testWebApp.movements.TargetMovement;
 
-import com.testWebApp.io.FileOperation;
-import java.awt.Point;
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -30,14 +33,16 @@ public class GraphicManager{
     private HashMap<Integer, Point> centersMap;
     private HashMap<Integer, Point> errorsMap;
 
-    private ArrayList < Pair<Double,Double> > eyeTrackingData;
-    private  ArrayList<String> screenShotHTMLs;
+    private ArrayList < Pair > eyeTrackingData;
+    private ArrayList<String> screenShotHTMLs;
 
+    private ArrayList<String> symptoms;
 
     private ArrayList<Double> distancesList;
 
     private MouseMovement mv;
     private TargetMovement tm;
+    private MouseClicks mc;
 
     private double durationTime = -1;
     private final String SEPARATOR = ";";
@@ -48,7 +53,8 @@ public class GraphicManager{
 
     private String userId;
     private String displayHours;
-    private int calcGetArea;
+    private int screenWidth;
+    private int screenHeight;
     private double averageAreaOfTarget;
     private double averageWidths;
 
@@ -57,10 +63,9 @@ public class GraphicManager{
 
     private int eyeTrackingPrecision;
 
-    public void init(String userId, String displayHours, int calcGetArea, double averageAreaOfTarget, double averageWidths, double durationTime, int errorCounter, String eyeStrainRate, long mouseMovementIndex, ArrayList < Pair<Double,Double> > eyeTrackingData, ArrayList<String> screenShotHtmls, HashMap<Integer, Integer> targetWidthMap, HashMap<Integer, Point> centersMap, HashMap<Integer, Point> errorsMap, MouseMovement mv, TargetMovement tm, int counter, int eyeTrackingPrecision) {
+    public void init(String userId, String displayHours, double averageAreaOfTarget, double averageWidths, double durationTime, int errorCounter, String eyeStrainRate, long mouseMovementIndex, ArrayList < Pair > eyeTrackingData, ArrayList<String> screenShotHtmls, HashMap<Integer, Integer> targetWidthMap, HashMap<Integer, Point> centersMap, HashMap<Integer, Point> errorsMap, MouseMovement mv, TargetMovement tm, int counter, int eyeTrackingPrecision, int screenWidth, int screenHeight, ArrayList<String> symptoms, MouseClicks mc) {
         this.userId = userId;
         this.displayHours = displayHours;
-        this.calcGetArea = calcGetArea;
         this.averageAreaOfTarget = averageAreaOfTarget;
         this.averageWidths = averageWidths;
         this.durationTime = durationTime;
@@ -76,6 +81,10 @@ public class GraphicManager{
         this.tm = tm;
         this.counter = counter;
         this.eyeTrackingPrecision = eyeTrackingPrecision;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        this.symptoms = symptoms;
+        this.mc = mc;
 
 
         df.applyPattern("#.##");
@@ -85,6 +94,7 @@ public class GraphicManager{
 
     void finishTrial(){
         saveMovements();
+        saveClicks();
         saveEyeTracking();
         saveScreenshots();
         //saveScreenCaptureDate();
@@ -104,9 +114,9 @@ public class GraphicManager{
 
         eyeData.append("X;Y \n");
 
-        for (Pair<Double, Double> eyePoint : eyeTrackingData) {
-            Double x = eyePoint.getKey();
-            Double y = eyePoint.getValue();
+        for (Pair eyePoint : eyeTrackingData) {
+            String x = String.format("%.2f", eyePoint.getKey());
+            String y = String.format("%.2f", eyePoint.getValue());
 
             temp = x + SEPARATOR + y;
             eyeData.append(temp);
@@ -153,9 +163,27 @@ public class GraphicManager{
         fo.writeOutput(targetFileName, targetData.toString());
     }
 
+    private void saveClicks() {
+        String mouseClicksFileName = "pointer_clicks.csv";
+
+        HashMap<Integer, Click> mouseClicks = mc.getClicks();
+        StringBuilder targetData = new StringBuilder();
+        String tempTarget;
+
+        targetData.append("INDEX;X;Y;STATUS \n");
+        for (Map.Entry<Integer, Click> entry : mouseClicks.entrySet()) {
+            Integer key = entry.getKey();
+            Click value = entry.getValue();
+
+            tempTarget = key + SEPARATOR + value.getPoint().getX() + SEPARATOR + value.getPoint().getY() + SEPARATOR + value.getStatus();
+            targetData.append(tempTarget);
+            targetData.append("\n");
+        }
+        fo.writeOutput(mouseClicksFileName, targetData.toString());
+    }
+
 
     private void saveCenterPoints() {
-        //should receive centersMap from client
         distancesList = new ArrayList<>();
 
         String fileName = "center_points.csv";
@@ -240,29 +268,40 @@ public class GraphicManager{
 
     }
 
-//    void captureScreenshot(int counter) {
-//        fo.captureScreenshot(panel, counter);
-//    }
-
     private  void  saveScreenshots(){
         fo.saveScreenshots(counter, screenShotHTMLs);
+    }
+
+    private String symptomsToString(ArrayList<String> symptoms){
+        StringBuilder result = new StringBuilder();
+        for (int i=0; i< symptoms.size(); i++){
+            result.append(symptoms.get(i));
+            if (i<symptoms.size()-1){
+                result.append(", ");
+            }
+        }
+        return result.toString();
     }
 
     private void generateSummary() {
         StringBuilder sb = new StringBuilder();
 
-        String header = "UserID;DisplayHours;Timestamp;Trials;AoS;AVG_AoT;Distances;Widths;Duration;Errors;Pointer_Movements;User_Rating;Eye_Tracking_Precision\n";
+        String header = "UserID;DisplayHours;Timestamp;Trials;AoS;AVG_AoT;Distances;Widths;Duration;Errors;Pointer_Movements;User_Rating;Eye_Tracking_Precision;Resolution;Symptoms\n";
         String timeStamp = fo.getTimeStamp();
 
         sb.append(header);
 
         double averageDistances = calc.getAverageDistances(distancesList);
+        int calcGetArea = calc.getArea(screenWidth, screenHeight);
+
+        String symptomsString = symptomsToString(symptoms);
+        String resolution = Integer.toString(screenWidth) + " x " + Integer.toString(screenHeight);
 
         String line = userId + SEPARATOR + displayHours + SEPARATOR + timeStamp + SEPARATOR + counter + SEPARATOR
                 + calcGetArea + SEPARATOR + df.format(averageAreaOfTarget)
                 + SEPARATOR + df.format(averageDistances) + SEPARATOR + df.format(averageWidths) + SEPARATOR
                 + durationTime + SEPARATOR + errorCounter + SEPARATOR + mouseMovementIndex
-                + SEPARATOR + eyeStrainRate + SEPARATOR + eyeTrackingPrecision;
+                + SEPARATOR + eyeStrainRate + SEPARATOR + eyeTrackingPrecision + SEPARATOR + resolution + SEPARATOR + symptomsString;
 
         sb.append(line);
 
